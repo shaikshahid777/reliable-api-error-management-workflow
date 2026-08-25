@@ -1,0 +1,123 @@
+{
+  "name": "Centralized Error Monitor",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b14f1edf-9b07-47cd-8478-f3992f8a1a20",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "i1",
+              "name": "failedNode",
+              "value": "={{ $json.execution?.lastNodeExecuted || \"unknown\" }}",
+              "type": "string"
+            },
+            {
+              "id": "i2",
+              "name": "executionId",
+              "value": "={{ $json.execution?.id || \"n/a\" }}",
+              "type": "string"
+            },
+            {
+              "id": "i3",
+              "name": "workflowName",
+              "value": "={{ $json.workflow?.name || \"unknown\" }}",
+              "type": "string"
+            },
+            {
+              "id": "i4",
+              "name": "errorMessage",
+              "value": "={{ $json.execution?.error?.message || \"No message\" }}",
+              "type": "string"
+            },
+            {
+              "id": "i5",
+              "name": "incidentTime",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a568ebbe-2f56-403c-aab1-824de47a1671",
+      "name": "Build_Incident_Report",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select alert channel (e.g. #ops-alerts)"
+        },
+        "text": "=🚨 *Workflow Failure Alert*\n*Workflow:* {{ $json.workflowName }}\n*Failed Node:* {{ $json.failedNode }}\n*Execution ID:* {{ $json.executionId }}\n*Error:* {{ $json.errorMessage }}\n*Time:* {{ $json.incidentTime }}",
+        "otherOptions": {}
+      },
+      "id": "3b3ca00e-db22-4905-9f7e-a8e8f8fbe878",
+      "name": "Log_SlackAlert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        448,
+        0
+      ],
+      "webhookId": "572e3aba-130b-4493-842e-2bbc6842379a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build_Incident_Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build_Incident_Report": {
+      "main": [
+        [
+          {
+            "node": "Log_SlackAlert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "deadfbb9-fc25-41a4-a5e4-382d75d707a3",
+  "meta": {
+    "instanceId": "201381d913fa9e78389f7093cb99cedc70c766251a500f897db19feccfda3bd0"
+  },
+  "nodeGroups": [],
+  "id": "cEhmrDiPxOzMKvMx",
+  "tags": []
+}
